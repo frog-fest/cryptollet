@@ -8,15 +8,36 @@ pool:
 variables:
   buildConfiguration: 'Release'
   outputDirectory: '$(build.binariesDirectory)/$(buildConfiguration)'
+  solutionName: 'Cryptollet.sln'
+  androidProject: 'Cryptollet.Android/Cryptollet.Android.csproj'
 
-steps:
-    - task: NuGetToolInstaller@1
-    - task: NuGetCommand@2
-      inputs:
-        restoreSolution: '**/*.sln'
-    - task: XamarinAndroid@1
-      inputs:
-        projectFile: '**/*droid*.csproj'
-        outputDirectory: '$(outputDirectory)'
-        configuration: '$(buildConfiguration)'
+jobs:
+- job: BuildAndroid
+  displayName: "Build Android App"
 
+  steps:
+      - task: NuGetToolInstaller@1
+      - task: NuGetCommand@2
+        inputs:
+          restoreSolution: '**/*.sln'
+      - task: XamarinAndroid@1
+        inputs:
+          projectFile: '$(androidProject)'
+          outputDirectory: '$(outputDirectory)'
+          configuration: '$(buildConfiguration)'
+
+- job: BuildiOS
+  displayName: "Build iOS App"
+  
+  steps:
+  - task: NuGetToolInstaller@1
+  - task: NuGetCommand@2
+    inputs:
+      restoreSolution: '$(solutionName)'
+  - task: XamariniOS@2
+    inputs:
+      solutionFile: '$(solutionName)'
+      configuration: '$(buildConfiguration)'
+      packageApp: false
+      buildForSimulator: true
+      runNugetRestore: false
