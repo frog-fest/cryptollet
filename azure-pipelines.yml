@@ -35,7 +35,7 @@ jobs:
       - task: PublishPipelineArtifact@1
         inputs:
           targetPath: 'Cryptollet.Android/obj/Release/100/android/bin/com.kristijankralj.cryptollet.apk'
-          artifactName: WebApp
+          artifactName: AndroidApk
 - job: BuildiOS
   displayName: "Build iOS App"
   
