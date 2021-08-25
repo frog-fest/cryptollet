@@ -34,7 +34,7 @@ jobs:
           apksignerKeyPassword: '$(keystorePassword)'
       - task: PublishPipelineArtifact@1
         inputs:
-          targetPath: 'Cryptollet.Android/obj/Release/100/android/bin/com.kristijankralj.cryptollet.apk'
+          targetPath: 'Cryptollet.Android/obj/Release/android/bin/com.kristijankralj.cryptollet.apk'
           artifactName: AndroidApk
 - job: BuildiOS
   displayName: "Build iOS App"
