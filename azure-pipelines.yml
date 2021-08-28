@@ -11,68 +11,74 @@ variables:
   solutionName: 'Cryptollet.sln'
   androidProject: 'Cryptollet.Android/Cryptollet.Android.csproj'
 
-jobs:
-- job: BuildAndroid
-  displayName: "Build Android App"
+stages:
+- stage: BuildApps
+  displayName: "Build the Apps"
+  jobs:
+  - job: BuildAndroid
+    displayName: "Build Android App"
 
-  steps:
-      - task: NuGetToolInstaller@1
-      - task: NuGetCommand@2
-        inputs:
-          restoreSolution: '**/*.sln'
-      - task: XamarinAndroid@1
-        inputs:
-          projectFile: '$(androidProject)'
-          outputDirectory: '$(outputDirectory)'
-          configuration: '$(buildConfiguration)'
-      - task: AndroidSigning@3
-        inputs:
-          apkFiles: '**/*.apk'
-          apksignerKeystoreFile: 'ms.keystore'
-          apksignerKeystorePassword: '$(keystorePassword)'
-          apksignerKeystoreAlias: '$(keystoreName)'
-          apksignerKeyPassword: '$(keystorePassword)'
-      - task: PublishPipelineArtifact@1
-        inputs:
-          targetPath: 'Cryptollet.Android/obj/Release/android/bin/com.kristijankralj.cryptollet.apk'
-          artifactName: AndroidApk
-- job: BuildiOS
-  displayName: "Build iOS App"
-  
-  steps:
-  - task: NuGetToolInstaller@1
-  - task: NuGetCommand@2
-    inputs:
-      restoreSolution: '$(solutionName)'
-  - task: XamariniOS@2
-    inputs:
-      solutionFile: '$(solutionName)'
-      configuration: Debug
-      packageApp: false
-      buildForSimulator: true
-      runNugetRestore: false
+    steps:
+        - task: NuGetToolInstaller@1
+        - task: NuGetCommand@2
+          inputs:
+            restoreSolution: '**/*.sln'
+        - task: XamarinAndroid@1
+          inputs:
+            projectFile: '$(androidProject)'
+            outputDirectory: '$(outputDirectory)'
+            configuration: '$(buildConfiguration)'
+        - task: AndroidSigning@3
+          inputs:
+            apkFiles: '**/*.apk'
+            apksignerKeystoreFile: 'ms.keystore'
+            apksignerKeystorePassword: '$(keystorePassword)'
+            apksignerKeystoreAlias: '$(keystoreName)'
+            apksignerKeyPassword: '$(keystorePassword)'
+        - task: PublishPipelineArtifact@1
+          inputs:
+            targetPath: 'Cryptollet.Android/obj/Release/android/bin/com.kristijankralj.cryptollet.apk'
+            artifactName: AndroidApk
+  - job: BuildiOS
+    displayName: "Build iOS App"
+    
+    steps:
+    - task: NuGetToolInstaller@1
+    - task: NuGetCommand@2
+      inputs:
+        restoreSolution: '$(solutionName)'
+    - task: XamariniOS@2
+      inputs:
+        solutionFile: '$(solutionName)'
+        configuration: Debug
+        packageApp: false
+        buildForSimulator: true
+        runNugetRestore: false
 
-- job: RunTests
-  displayName: "Run unit tests"
-  steps:
-  - task: DotNetCoreCLI@2
-    inputs:
-      command: 'test'
-      projects: 'Cryptollet.Tests/Cryptollet.Tests.csproj'
-      configuration: '$(buildConfiguration)'
-- job: AndroidBeta
-  displayName: "Release Android Beta"
-  dependsOn: [BuildAndroid, RunTests]
-  steps:
-  - task: DownloadPipelineArtifact@2
-    inputs:
-      artifact: AndroidApk
-  - task: AppCenterDistribute@3
-    inputs:
-      serverEndpoint: 'App Center'
-      appSlug: 'martin.seibert-outlook.at/Cryptollet-1'
-      appFile: '$(Pipeline.Workspace)/com.kristijankralj.cryptollet.apk'
-      releaseNotesOption: 'file'
-      releaseNotesFile: 'releasenotes.txt'
-      destinationType: 'groups'
-      distributionGroupId: '1959af70-4c21-4fe8-a9a5-82d12e58aa0c'
+  - job: RunTests
+    displayName: "Run unit tests"
+    steps:
+    - task: DotNetCoreCLI@2
+      inputs:
+        command: 'test'
+        projects: 'Cryptollet.Tests/Cryptollet.Tests.csproj'
+        configuration: '$(buildConfiguration)'
+- stage: BetaVersions
+  dependsOn: BuildApps
+  displayName: "Beta Release"
+  jobs:
+    - job: AndroidBeta
+      displayName: "Release Android Beta"
+      steps:
+      - task: DownloadPipelineArtifact@2
+        inputs:
+          artifact: AndroidApk
+      - task: AppCenterDistribute@3
+        inputs:
+          serverEndpoint: 'App Center'
+          appSlug: 'martin.seibert-outlook.at/Cryptollet-1'
+          appFile: '$(Pipeline.Workspace)/com.kristijankralj.cryptollet.apk'
+          releaseNotesOption: 'file'
+          releaseNotesFile: 'releasenotes.txt'
+          destinationType: 'groups'
+          distributionGroupId: '1959af70-4c21-4fe8-a9a5-82d12e58aa0c'
