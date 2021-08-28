@@ -65,6 +65,14 @@ jobs:
   dependsOn: [BuildAndroid, RunTests]
   steps:
   - task: DownloadPipelineArtifact@2
-  inputs:
-    artifact: AndroidApk
-    
+    inputs:
+      artifact: AndroidApk
+  - task: AppCenterDistribute@3
+    inputs:
+      serverEndpoint: 'App Center'
+      appSlug: 'martin.seibert-outlook.at/Cryptollet-1'
+      appFile: '$(Pipeline.Workspace)/com.kristijankralj.cryptollet.apk'
+      releaseNotesOption: 'file'
+      releaseNotesFile: 'releasenotes.txt'
+      destinationType: 'groups'
+      distributionGroupId: '1959af70-4c21-4fe8-a9a5-82d12e58aa0c'
