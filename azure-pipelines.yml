@@ -60,3 +60,11 @@ jobs:
       command: 'test'
       projects: 'Cryptollet.Tests/Cryptollet.Tests.csproj'
       configuration: '$(buildConfiguration)'
+- job: AndroidBeta
+  displayName: "Release Android Beta"
+  dependsOn: [BuildAndroid, RunTests]
+  steps:
+  - task: DownloadPipelineArtifact@2
+  inputs:
+    artifact: AndroidApk
+    
